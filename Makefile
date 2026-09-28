@@ -30,3 +30,6 @@ clean:
 	rm -rf $(BUILD_DIR)
 
 check: fmt vet lint test
+
+health:
+	curl -i localhost:8080/healthz
