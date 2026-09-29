@@ -10,13 +10,20 @@ import (
 	"syscall"
 	"time"
 
+	config "github.com/cihangirozmus/go-ai-router/configs"
 	"github.com/cihangirozmus/go-ai-router/internal/server"
 )
 
 func main() {
 	logger := slog.New(slog.NewJSONHandler(os.Stdout, nil))
 
-	srv := server.New(":8080", logger)
+	cfg, err := config.Load("configs/config.yaml")
+	if err != nil {
+		logger.Error("failed to load config", "error", err)
+		os.Exit(1)
+	}
+
+	srv := server.New(cfg.Server.Addr, logger)
 
 	// SIGINT (Ctrl+C) or SIGTERM cancels the ctx
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
@@ -35,7 +42,8 @@ func main() {
 		}
 	case <-ctx.Done():
 		logger.Info("Shutting down!")
-		shutdownCtx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+		timeout := time.Duration(cfg.Server.ShutdownTimeoutSeconds) * time.Second
+		shutdownCtx, cancel := context.WithTimeout(context.Background(), timeout)
 		defer cancel()
 
 		if err := srv.Shutdown(shutdownCtx); err != nil {
