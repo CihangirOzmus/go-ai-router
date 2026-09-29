@@ -12,9 +12,16 @@ import (
 
 	config "github.com/cihangirozmus/go-ai-router/configs"
 	"github.com/cihangirozmus/go-ai-router/internal/server"
+	"github.com/joho/godotenv"
 )
 
 func main() {
+	if err := godotenv.Load(); err != nil {
+		logger := slog.New(slog.NewJSONHandler(os.Stdout, nil))
+		logger.Error("failed to load .env file", "error", err)
+		os.Exit(1)
+	}
+
 	logger := slog.New(slog.NewJSONHandler(os.Stdout, nil))
 
 	cfg, err := config.Load("configs/config.yaml")
