@@ -11,6 +11,7 @@ import (
 	"time"
 
 	config "github.com/cihangirozmus/go-ai-router/configs"
+	"github.com/cihangirozmus/go-ai-router/internal/provider"
 	"github.com/cihangirozmus/go-ai-router/internal/server"
 	"github.com/joho/godotenv"
 )
@@ -29,6 +30,10 @@ func main() {
 		logger.Error("failed to load config", "error", err)
 		os.Exit(1)
 	}
+
+	openAiCfg := cfg.Providers["openai"]
+	openAiProvider := provider.NewOpenAIProvider(openAiCfg.APIKey(), openAiCfg.BaseUrl)
+	logger.Info("Provider is ready", "name", openAiProvider.Name())
 
 	srv := server.New(cfg.Server.Addr, logger)
 
